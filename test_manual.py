@@ -69,11 +69,7 @@ MOCK_ACTIONS = {
 }
 
 
-def mock_as_dict(obj):
-    """Convert mock object to dict."""
-    if isinstance(obj, dict):
-        return obj
-    return obj
+
 
 
 # Mock classes for testing
