@@ -1,0 +1,130 @@
+name: Sentinel Classic Automation Detection
+
+on:
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      subscription_id:
+        description: 'Azure Subscription ID'
+        required: true
+        type: string
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for Azure OIDC authentication
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run Sentinel Classic Automation Detection
+        run: |
+          sentinel-detect \
+            --subscription-id ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
+            --output-format json \
+            --output-file detection-results.json \
+            --use-cli-credential
+        continue-on-error: true
+        id: detection
+
+      - name: Upload detection results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: detection-results
+          path: detection-results.json
+          retention-days: 30
+
+      - name: Check results and create issue if rules found
+        if: steps.detection.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('detection-results.json', 'utf8'));
+            
+            if (results.total_rules_with_classic_automation > 0) {
+              const body = `
+              ## ⚠️ Sentinel Classic Automation Migration Required
+              
+              **Total Rules with Classic Automation:** ${results.total_rules_with_classic_automation}
+              **Migration Deadline:** ${results.migration_deadline}
+              
+              ### Rules Requiring Migration:
+              
+              ${results.results.map((r, i) => `
+              **${i + 1}. ${r.rule_display_name}**
+              - Workspace: ${r.workspace_name}
+              - Resource Group: ${r.resource_group}
+              - Severity: ${r.severity}
+              - Classic Automations: ${r.classic_automation_count}
+              - Playbooks:
+              ${r.actions.map(a => `  - ${a.logic_app_resource_id}`).join('\n')}
+              `).join('\n')}
+              
+              ### Action Required:
+              
+              1. Review the [migration guide](https://learn.microsoft.com/azure/sentinel/automation/migrate-playbooks-to-automation-rules)
+              2. Create automation rules to replace classic automation
+              3. Test the new automation rules
+              4. Remove classic automation from analytic rules
+              5. Re-run this workflow to verify migration
+              
+              See the attached artifact for full details.
+              `;
+              
+              // Check if issue already exists
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: 'sentinel-migration'
+              });
+              
+              if (issues.data.length === 0) {
+                // Create new issue
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `Sentinel Classic Automation Migration Required (${results.total_rules_with_classic_automation} rules)`,
+                  body: body,
+                  labels: ['sentinel-migration', 'priority-high']
+                });
+              } else {
+                // Update existing issue
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issues.data[0].number,
+                  body: `### Update: ${new Date().toISOString()}\n\n` + body
+                });
+              }
+            }
+
+      - name: Fail workflow if migration needed
+        if: steps.detection.outcome == 'failure'
+        run: |
+          echo "::error::Classic automation detected - migration required before 2026-03-31"
+          exit 1
