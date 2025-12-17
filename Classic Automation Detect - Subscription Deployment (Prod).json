@@ -7,8 +7,11 @@
             "type": "String"
         },
         "location": {
-            "defaultValue": "eastus",
-            "type": "String"
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "Azure region where the Logic App will be deployed"
+            }
         },
         "resourceGroupName": {
             "type": "String",
