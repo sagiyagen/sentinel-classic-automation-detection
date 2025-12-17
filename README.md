@@ -1,7 +1,5 @@
 # Classic Automation Detection Tool for Microsoft Sentinel
 
-> **⚠️ Community Solution:** This is a community-contributed tool designed to assist with the migration from classic automation to automation rules. While created to help Microsoft Sentinel customers, this is not an official Microsoft product. Use at your own discretion and test in a non-production environment first.
-
 ## Overview
 
 As Microsoft Sentinel approaches the deprecation of classic automation, this tool helps you quickly identify analytic rules that still use classic alert-trigger playbooks and need to be migrated to automation rules.
@@ -96,30 +94,10 @@ Once you've completed all migrations, you can safely delete the Logic App. Howev
 
 ---
 
-## 📚 Additional Resources
-
-- [Microsoft Sentinel Automation Documentation](https://learn.microsoft.com/en-us/azure/sentinel/automation/)
-- [Automation Rules Overview](https://learn.microsoft.com/en-us/azure/sentinel/automation/automate-incident-handling-with-automation-rules)
-- [Logic Apps Documentation](https://learn.microsoft.com/en-us/azure/logic-apps/)
-- [Managed Identities in Azure](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)
-
----
-
-## 📝 License
-
-These ARM templates are provided as-is for use with Microsoft Sentinel environments.
-
----
-
-## 🤝 Support
-
-For issues or questions:
-- Review the [official migration guide](https://learn.microsoft.com/en-us/azure/sentinel/automation/migrate-playbooks-to-automation-rules)
-- Check the Logic App run history for detailed error messages
-- Ensure you have the required permissions for deployment
-
----
-
 **Last Updated:** December 2025  
 **Version:** 1.0 (Production)  
 **Type:** Community Solution
+
+---
+
+> **⚠️ Disclaimer:** This is a community-contributed tool designed to assist with the migration from classic automation to automation rules. While created to help Microsoft Sentinel customers, this is not an official Microsoft product. Use at your own discretion and test in a non-production environment first.
