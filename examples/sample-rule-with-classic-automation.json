@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Log Analytics workspace with Sentinel"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.SecurityInsights/alertRules",
+      "apiVersion": "2022-09-01-preview",
+      "name": "SuspiciousLoginRule",
+      "scope": "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]",
+      "kind": "Scheduled",
+      "properties": {
+        "displayName": "Suspicious Login Activity",
+        "description": "Detects multiple failed login attempts followed by a successful login",
+        "severity": "High",
+        "enabled": true,
+        "query": "SecurityEvent\n| where EventID == 4625\n| summarize FailedAttempts = count() by Account, Computer\n| where FailedAttempts > 5",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": ["InitialAccess", "CredentialAccess"],
+        "techniques": ["T1110"],
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules/actions",
+      "apiVersion": "2022-09-01-preview",
+      "name": "SuspiciousLoginRule/EnrichmentPlaybook",
+      "dependsOn": [
+        "[resourceId('Microsoft.SecurityInsights/alertRules', 'SuspiciousLoginRule')]"
+      ],
+      "properties": {
+        "logicAppResourceId": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/sentinel-rg/providers/Microsoft.Logic/workflows/EnrichmentPlaybook",
+        "triggerUri": "https://prod-XX.region.logic.azure.com:443/workflows/.../triggers/manual/paths/invoke?..."
+      }
+    },
+    {
+      "type": "Microsoft.SecurityInsights/alertRules/actions",
+      "apiVersion": "2022-09-01-preview",
+      "name": "SuspiciousLoginRule/NotificationPlaybook",
+      "dependsOn": [
+        "[resourceId('Microsoft.SecurityInsights/alertRules', 'SuspiciousLoginRule')]"
+      ],
+      "properties": {
+        "logicAppResourceId": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/sentinel-rg/providers/Microsoft.Logic/workflows/NotificationPlaybook",
+        "triggerUri": "https://prod-XX.region.logic.azure.com:443/workflows/.../triggers/manual/paths/invoke?..."
+      }
+    }
+  ]
+}
