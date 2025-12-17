@@ -77,13 +77,11 @@ Click the button below to deploy directly to Azure:
 
 **Subscription-Level Detection:**
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fyour-repo%2Fclassic-automation-migration%2Fmain%2FClassic%20Automation%20Detect%20-%20Subscription%20Deployment%20(Prod).json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsagiyagen%2Fsentinel-classic-automation-detection%2Fmain%2FClassic%20Automation%20Detect%20-%20Subscription%20Deployment%20(Prod).json)
 
 **Workspace-Level Detection:**
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fyour-repo%2Fclassic-automation-migration%2Fmain%2FClassic%20Automation%20Detect%20-%20Workspace%20level%20(Prod).json)
-
-> **Note:** Update the URLs above with your actual GitHub repository path once you host these templates.
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsagiyagen%2Fsentinel-classic-automation-detection%2Fmain%2FClassic%20Automation%20Detect%20-%20Workspace%20level%20(Prod).json)
 
 ---
 
