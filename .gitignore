@@ -39,6 +39,7 @@ Thumbs.db
 # Output files
 *.csv
 *.json
+!examples/*.json
 output/
 
 # Azure credentials

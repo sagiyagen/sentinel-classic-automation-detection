@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Log Analytics workspace with Sentinel"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.SecurityInsights/automationRules",
+      "apiVersion": "2025-09-01",
+      "name": "SuspiciousLoginAutomationRule",
+      "scope": "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]",
+      "properties": {
+        "displayName": "Run Playbooks on Suspicious Login",
+        "order": 1,
+        "triggeringLogic": {
+          "triggersOn": "Incidents",
+          "triggersWhen": "Created",
+          "conditions": [
+            {
+              "conditionType": "Property",
+              "conditionProperties": {
+                "propertyName": "IncidentRelatedAnalyticRuleIds",
+                "propertyValues": [
+                  "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/sentinel-rg/providers/Microsoft.OperationalInsights/workspaces/sentinel-ws/providers/Microsoft.SecurityInsights/alertRules/SuspiciousLoginRule"
+                ],
+                "operator": "Contains"
+              }
+            }
+          ]
+        },
+        "actions": [
+          {
+            "order": 1,
+            "actionType": "RunPlaybook",
+            "actionConfiguration": {
+              "logicAppResourceId": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/sentinel-rg/providers/Microsoft.Logic/workflows/EnrichmentPlaybook",
+              "tenantId": "87654321-4321-4321-4321-210987654321"
+            }
+          },
+          {
+            "order": 2,
+            "actionType": "RunPlaybook",
+            "actionConfiguration": {
+              "logicAppResourceId": "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/sentinel-rg/providers/Microsoft.Logic/workflows/NotificationPlaybook",
+              "tenantId": "87654321-4321-4321-4321-210987654321"
+            }
+          }
+        ],
+        "isEnabled": true
+      }
+    }
+  ]
+}
